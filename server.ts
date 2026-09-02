@@ -73,6 +73,37 @@ setInterval(() => {
 
 // API Endpoint to fetch latest live prices (Institutional High-Frequency Execution Feed)
 app.get("/api/prices", async (req, res) => {
+  try {
+    // Fetch from CoinGecko every CACHE_DURATION
+    if (Date.now() - lastFetched > CACHE_DURATION) {
+      const response = await fetch("https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin,ethereum,solana,binancecoin,ripple,cardano,chainlink,polkadot,tether,dogecoin&order=market_cap_desc&per_page=10&page=1&sparkline=true");
+      
+      if (response.ok) {
+        const data = await response.json();
+        // Merge live data with our local cache format
+        localPricesCache = data.map((coin: any) => ({
+          id: coin.id,
+          name: coin.name,
+          symbol: coin.symbol.toUpperCase(),
+          price: coin.current_price,
+          change24h: coin.price_change_percentage_24h,
+          marketCap: coin.market_cap,
+          volume24h: coin.total_volume,
+          logo: coin.image,
+          sparkline: coin.sparkline_in_7d?.price?.slice(-20) || []
+        }));
+        lastFetched = Date.now();
+        return res.json(localPricesCache);
+      } else {
+        console.error(`CoinGecko API error: ${response.status}`);
+        if (response.status === 429) lastFetched = Date.now(); // Rate limited
+      }
+    }
+  } catch (error) {
+    console.error("Live pricing fetch error:", error);
+  }
+  
+  // Fallback to local simulated fluctuation cache
   return res.json(localPricesCache);
 });
 
