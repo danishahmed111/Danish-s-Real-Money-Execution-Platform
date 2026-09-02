@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Token, LinkedWallet, NftAsset } from "../types";
+import UpiManagementSection from "./UpiManagementSection";
 
 export default function TransferEngine() {
   const { 
@@ -138,14 +139,37 @@ export default function TransferEngine() {
     
     if (flow === "deposit") {
       const appName = selectedUpiApp === "gpay" ? "Google Pay" : selectedUpiApp === "paytm" ? "Paytm" : selectedUpiApp === "phonepe" ? "PhonePe" : "BHIM UPI";
-      setProcessingStatus(paymentMethod === "upi" ? `Connecting to ${appName} Gateway...` : `Connecting to ${paymentMethod.toUpperCase()} Bank...`);
-      await new Promise(r => setTimeout(r, 800));
-      setProcessingStatus("Waiting for VPA PIN authorization...");
-      await new Promise(r => setTimeout(r, 1200));
-      setProcessingStatus("Settling via NPCI UPI Switch...");
-      await new Promise(r => setTimeout(r, 800));
-
+      setProcessingStatus(paymentMethod === "upi" ? `Connecting to ${appName} Gateway...` : paymentMethod === "netbanking" ? `Connecting to ${selectedBank}...` : `Authorizing 3DS Card...`);
+      
       try {
+        let endpoint = "/api/payment/upi";
+        let body: any = { upiId, amount, appName };
+        if (paymentMethod === "netbanking") {
+          endpoint = "/api/payment/netbanking";
+          body = { bankName: selectedBank, amount };
+        } else if (paymentMethod === "card") {
+          endpoint = "/api/payment/card";
+          body = { cardNumber: "4532XXXXXXXX8892", expiry: "12/28", cvv: "921", amount };
+        }
+
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+
+        if (!data.success) {
+          setError(data.message || "Payment gateway authorization failed.");
+          setIsProcessing(false);
+          return;
+        }
+
+        setProcessingStatus("Waiting for PIN authorization & settlement...");
+        await new Promise(r => setTimeout(r, 1000));
+        setProcessingStatus("Settling via NPCI / SWIFT Switch...");
+        await new Promise(r => setTimeout(r, 800));
+
         const assetPrice = activeAsset?.price || (selectedAssetSymbol === "BTC" ? 94850 : selectedAssetSymbol === "ETH" ? 3450 : selectedAssetSymbol === "SOL" ? 185 : 1.0);
         const usdVal = parseFloat(amount) * assetPrice;
         const success = executeTransaction(
@@ -156,15 +180,15 @@ export default function TransferEngine() {
           parseFloat(amount),
           usdVal,
           selectedWalletId,
-          `UPI/DEP/${Date.now()}/${Math.floor(Math.random()*8999+1000)}`
+          data.transactionId || `TXN/${Date.now()}`
         );
         if (success) {
           setStep("success");
         } else {
-          setError("Deposit failed. Check your security settings.");
+          setError("Deposit failed. Check your portfolio state.");
         }
       } catch (err) {
-        setError("Deposit transaction error.");
+        setError("Deposit transaction error connecting to payment API.");
       } finally {
         setIsProcessing(false);
       }
@@ -506,6 +530,7 @@ export default function TransferEngine() {
                                   </button>
                                 </div>
                               </div>
+                              <UpiManagementSection upiId={upiId} setUpiId={setUpiId} amount={amount} />
                             </div>
                           )}
                         </div>
