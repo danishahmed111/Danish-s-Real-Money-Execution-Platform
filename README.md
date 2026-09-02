@@ -1,6 +1,8 @@
 # Cryptoverse Exchange
 
-A high-performance cryptocurrency exchange platform and multi-chain portfolio tracker. This application features live simulated crypto prices, a trading terminal, a portfolio dashboard, and multi-wallet management mechanisms with an emphasis on clean design and secure user functionality.
+A high-performance cryptocurrency exchange platform and multi-chain portfolio tracker. This application features live simulated crypto prices, a trading terminal, a portfolio dashboard, and multi-wallet support.
+
+**Live App**: https://real-money-execution-cryptocurrency-exchange-trad.ai.studio
 
 ## Features
 
@@ -67,4 +69,4 @@ A high-performance cryptocurrency exchange platform and multi-chain portfolio tr
 
 ## Note
 
-This application is built as a highly polished, responsive client-side interface with a lightweight server component to support advanced routing or backend bridging (such as Google Gemini). Local app settings sync utilizes local storage.
+This application is built as a highly polished, responsive client-side interface with a lightweight server component to support advanced routing or backend bridging (such as Google Gemini). Local data storage and state management are optimized for performance and user experience.
