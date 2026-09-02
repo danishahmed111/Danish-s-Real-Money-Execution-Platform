@@ -1,0 +1,159 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net: default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Validation helpers
+    function isValidPublicProfile(data) {
+      return data.keys().hasAll(['userId', 'displayName', 'photoURL', 'createdAt', 'updatedAt']) 
+        && data.keys().size() == 5 
+        && data.userId is string 
+        && data.userId == request.auth.uid 
+        && data.displayName is string 
+        && data.displayName.size() <= 64 
+        && data.photoURL is string 
+        && data.photoURL.size() <= 2048
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidPrivateSecurity(data) {
+      return data.keys().hasAll(['userId', 'email', 'twoFactorEnabled', 'twoFactorSecret', 'backupCodes', 'updatedAt'])
+        && data.keys().size() == 6
+        && data.userId is string
+        && data.userId == request.auth.uid
+        && data.email is string
+        && data.email.size() <= 128
+        && data.email.matches('^.+@.+$')
+        && data.twoFactorEnabled is bool
+        && data.twoFactorSecret is string
+        && data.twoFactorSecret.size() <= 256
+        && data.backupCodes is list
+        && data.backupCodes.size() <= 10
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidLinkedWallet(data) {
+      return data.keys().hasAll(['walletId', 'address', 'network', 'label', 'createdAt'])
+        && data.keys().size() == 5
+        && data.walletId is string
+        && data.walletId.size() <= 128
+        && data.address is string
+        && data.address.size() <= 128
+        && data.network is string
+        && data.network.size() <= 64
+        && data.label is string
+        && data.label.size() <= 64
+        && data.createdAt is timestamp;
+    }
+
+    function isValidTrackedAsset(data) {
+      return data.keys().hasAll(['assetId', 'symbol', 'name', 'amount', 'buyPrice', 'updatedAt'])
+        && data.keys().size() == 6
+        && data.assetId is string
+        && data.assetId.size() <= 128
+        && data.symbol is string
+        && data.symbol.size() <= 16
+        && data.name is string
+        && data.name.size() <= 64
+        && (data.amount is float || data.amount is int)
+        && (data.buyPrice is float || data.buyPrice is int)
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidTransactionRecord(data) {
+      return data.keys().hasAll(['transactionId', 'type', 'fromAsset', 'toAsset', 'fromAmount', 'toAmount', 'usdValue', 'fee', 'timestamp'])
+        && data.keys().size() == 9
+        && data.transactionId is string
+        && data.transactionId.size() <= 128
+        && data.type is string
+        && (data.type == 'BUY' || data.type == 'SELL' || data.type == 'SWAP' || data.type == 'TRANSFER')
+        && data.fromAsset is string
+        && data.fromAsset.size() <= 16
+        && data.toAsset is string
+        && data.toAsset.size() <= 16
+        && (data.fromAmount is float || data.fromAmount is int)
+        && (data.toAmount is float || data.toAmount is int)
+        && (data.usdValue is float || data.usdValue is int)
+        && (data.fee is float || data.fee is int)
+        && data.timestamp is timestamp;
+    }
+
+    // Rules matching
+    match /users/{userId} {
+      
+      // Public Profile: single doc at `/users/{userId}/public/profile`
+      match /public/profile {
+        allow get: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidPublicProfile(incoming()) && incoming().createdAt == request.time && incoming().updatedAt == request.time;
+        allow update: if isOwner(userId) && isValidPublicProfile(incoming()) 
+          && incoming().createdAt == existing().createdAt 
+          && incoming().updatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'updatedAt']);
+        allow delete: if false; // Cannot delete profile
+      }
+
+      // Private Security: single doc at `/users/{userId}/private/security`
+      match /private/security {
+        allow get: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidPrivateSecurity(incoming()) && incoming().updatedAt == request.time;
+        allow update: if isOwner(userId) && isValidPrivateSecurity(incoming())
+          && incoming().updatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly(['twoFactorEnabled', 'twoFactorSecret', 'backupCodes', 'updatedAt']);
+        allow delete: if false; // Cannot delete private security
+      }
+
+      // Wallets subcollection: `/users/{userId}/wallets/{walletId}`
+      match /wallets/{walletId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(walletId) && isValidLinkedWallet(incoming()) && incoming().createdAt == request.time;
+        allow update: if isOwner(userId) && isValidId(walletId) && isValidLinkedWallet(incoming())
+          && incoming().createdAt == existing().createdAt
+          && incoming().diff(existing()).affectedKeys().hasOnly(['label']);
+        allow delete: if isOwner(userId) && isValidId(walletId);
+      }
+
+      // Assets subcollection: `/users/{userId}/assets/{assetId}`
+      match /assets/{assetId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(assetId) && isValidTrackedAsset(incoming()) && incoming().updatedAt == request.time;
+        allow update: if isOwner(userId) && isValidId(assetId) && isValidTrackedAsset(incoming())
+          && incoming().updatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly(['amount', 'buyPrice', 'updatedAt']);
+        allow delete: if isOwner(userId) && isValidId(assetId);
+      }
+
+      // Transactions subcollection: `/users/{userId}/transactions/{transactionId}`
+      match /transactions/{transactionId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(transactionId) && isValidTransactionRecord(incoming()) && incoming().timestamp == request.time;
+        allow update: if false; // Immutable
+        allow delete: if false; // Immutable
+      }
+    }
+  }
+}

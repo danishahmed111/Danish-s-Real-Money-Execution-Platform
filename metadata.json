@@ -1,0 +1,8 @@
+{
+  "name": "Danish's Real Money Execution Platform",
+  "description": "An institutional-grade real money execution platform with live spot exchange, automated limit orders, multi-chain custody, UPI/SWIFT fiat onramps, 2FA security, and AI trading advisor tailored for Danish Ahmed.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

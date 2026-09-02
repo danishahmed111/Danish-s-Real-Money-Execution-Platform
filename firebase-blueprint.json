@@ -1,0 +1,198 @@
+{
+  "entities": {
+    "PublicProfile": {
+      "title": "Public Profile",
+      "description": "User's non-sensitive profile information",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The Firebase Authentication UID"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "The user's display name or username"
+        },
+        "photoURL": {
+          "type": "string",
+          "description": "Profile picture URL"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp"
+        }
+      },
+      "required": ["userId", "displayName", "createdAt", "updatedAt"]
+    },
+    "PrivateSecurity": {
+      "title": "Private Security Settings",
+      "description": "User's highly sensitive details, including email and 2FA credentials",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The Firebase Authentication UID"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "User email address linked to Google"
+        },
+        "twoFactorEnabled": {
+          "type": "boolean",
+          "description": "Whether two-factor authentication is enabled"
+        },
+        "twoFactorSecret": {
+          "type": "string",
+          "description": "The TOTP 2FA secret used for secure code generation"
+        },
+        "backupCodes": {
+          "type": "array",
+          "description": "Emergency recovery codes"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp"
+        }
+      },
+      "required": ["userId", "email", "twoFactorEnabled", "updatedAt"]
+    },
+    "LinkedWallet": {
+      "title": "Linked Wallet",
+      "description": "Web3 wallet addresses connected or tracked by the user",
+      "type": "object",
+      "properties": {
+        "walletId": {
+          "type": "string",
+          "description": "Unique identifier for the linked wallet record"
+        },
+        "address": {
+          "type": "string",
+          "description": "Blockchain wallet address (EVM/Solana/Bitcoin)"
+        },
+        "network": {
+          "type": "string",
+          "description": "Target blockchain network (e.g. Ethereum, BSC, Polygon, Solana, Bitcoin)"
+        },
+        "label": {
+          "type": "string",
+          "description": "Custom label / name for the wallet"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp"
+        }
+      },
+      "required": ["walletId", "address", "network", "label", "createdAt"]
+    },
+    "TrackedAsset": {
+      "title": "Tracked Asset",
+      "description": "Digital assets manually tracked or stored in the integrated exchange dashboard",
+      "type": "object",
+      "properties": {
+        "assetId": {
+          "type": "string",
+          "description": "The unique asset document ID"
+        },
+        "symbol": {
+          "type": "string",
+          "description": "Token symbol (e.g. BTC, ETH, SOL)"
+        },
+        "name": {
+          "type": "string",
+          "description": "Token name (e.g. Bitcoin, Ethereum, Solana)"
+        },
+        "amount": {
+          "type": "number",
+          "description": "Amount of cryptocurrency currently held"
+        },
+        "buyPrice": {
+          "type": "number",
+          "description": "Average purchase price in USD for yield tracking"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp"
+        }
+      },
+      "required": ["assetId", "symbol", "name", "amount", "updatedAt"]
+    },
+    "TransactionRecord": {
+      "title": "Transaction Record",
+      "description": "Historical exchange ledger of all buys, sells, swaps, and transfers",
+      "type": "object",
+      "properties": {
+        "transactionId": {
+          "type": "string",
+          "description": "The transaction reference hash"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["BUY", "SELL", "SWAP", "TRANSFER"],
+          "description": "Exchange activity category"
+        },
+        "fromAsset": {
+          "type": "string",
+          "description": "Symbol of currency debited"
+        },
+        "toAsset": {
+          "type": "string",
+          "description": "Symbol of currency credited"
+        },
+        "fromAmount": {
+          "type": "number",
+          "description": "Debit volume"
+        },
+        "toAmount": {
+          "type": "number",
+          "description": "Credit volume"
+        },
+        "usdValue": {
+          "type": "number",
+          "description": "USD market value of the transaction"
+        },
+        "fee": {
+          "type": "number",
+          "description": "Transaction network fee in USD"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Time of transaction"
+        }
+      },
+      "required": ["transactionId", "type", "fromAsset", "toAsset", "fromAmount", "toAmount", "usdValue", "fee", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/public/profile": {
+      "schema": { "$ref": "#/entities/PublicProfile" },
+      "description": "Stores user's public-facing persona details"
+    },
+    "/users/{userId}/private/security": {
+      "schema": { "$ref": "#/entities/PrivateSecurity" },
+      "description": "Stores highly private and sensitive configurations like 2FA and emails"
+    },
+    "/users/{userId}/wallets/{walletId}": {
+      "schema": { "$ref": "#/entities/LinkedWallet" },
+      "description": "Manages lists of connected or monitored blockchain wallets"
+    },
+    "/users/{userId}/assets/{assetId}": {
+      "schema": { "$ref": "#/entities/TrackedAsset" },
+      "description": "Manages cryptocurrency token balances associated with the profile"
+    },
+    "/users/{userId}/transactions/{transactionId}": {
+      "schema": { "$ref": "#/entities/TransactionRecord" },
+      "description": "Aggregates users buying, selling, and swapping history records"
+    }
+  }
+}
