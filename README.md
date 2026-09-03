@@ -2,7 +2,7 @@
 
 A high-performance cryptocurrency exchange platform and multi-chain portfolio tracker. This application features live simulated crypto prices, a trading terminal, a portfolio dashboard, and multi-wallet support.
 
-**Live App**: https://real-money-execution-cryptocurrency-exchange-trad.ai.studio
+**Live App**: https://cryptocurrency-exchange-portfolio-tracker-1750966378.asia-southeast1.run.app
 
 ## Features
 
