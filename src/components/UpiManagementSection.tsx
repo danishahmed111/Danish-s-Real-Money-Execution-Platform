@@ -26,12 +26,7 @@ export default function UpiManagementSection({
   amount: string;
 }) {
   const [handlers, setHandlers] = useState<UpiHandler[]>([
-    { id: "gpay", name: "Google Pay", handleSuffixes: ["@okicici", "@okaxis", "@oksbi"], color: "border-blue-500/30", badgeBg: "bg-blue-500/10", textColor: "text-blue-400", latency: "0.62s", successRate: "99.7%", enabled: true },
-    { id: "phonepe", name: "PhonePe", handleSuffixes: ["@ybl", "@ibl", "@axl"], color: "border-purple-500/30", badgeBg: "bg-purple-500/10", textColor: "text-purple-400", latency: "0.78s", successRate: "99.4%", enabled: true },
-    { id: "paytm", name: "Paytm", handleSuffixes: ["@paytm"], color: "border-cyan-500/30", badgeBg: "bg-cyan-500/10", textColor: "text-cyan-400", latency: "0.85s", successRate: "98.9%", enabled: true },
-    { id: "amazon", name: "Amazon Pay", handleSuffixes: ["@apl", "@yapl"], color: "border-orange-500/30", badgeBg: "bg-orange-500/10", textColor: "text-orange-400", latency: "1.12s", successRate: "98.2%", enabled: true },
-    { id: "bhim", name: "BHIM UPI", handleSuffixes: ["@upi"], color: "border-emerald-500/30", badgeBg: "bg-emerald-500/10", textColor: "text-emerald-400", latency: "0.95s", successRate: "99.1%", enabled: true },
-    { id: "whatsapp", name: "WhatsApp Pay", handleSuffixes: ["@wa"], color: "border-teal-500/30", badgeBg: "bg-teal-500/10", textColor: "text-teal-400", latency: "1.24s", successRate: "97.5%", enabled: true },
+    { id: "gpay", name: "Google Pay", handleSuffixes: ["@okicici"], color: "border-blue-500/30", badgeBg: "bg-blue-500/10", textColor: "text-blue-400", latency: "0.62s", successRate: "99.7%", enabled: true },
   ]);
 
   const [bankRails, setBankRails] = useState([
@@ -51,9 +46,9 @@ export default function UpiManagementSection({
     h.handleSuffixes.some(suffix => upiId.toLowerCase().endsWith(suffix))
   ) || handlers[0];
 
-  const currentUpiId = upiId || "danish@okaxis";
+  const currentUpiId = upiId || "danishahmed0123200-3@okicici";
   const currentAmount = amount || "100.00";
-  const deepLink = `upi://pay?pa=${encodeURIComponent(currentUpiId)}&pn=Danish%20Ahmed&am=${encodeURIComponent(currentAmount)}&cu=INR&tn=Institutional%20Execution`;
+  const deepLink = `upi://pay?pa=${encodeURIComponent(currentUpiId)}&pn=${encodeURIComponent("DANISH AHMED K M (DM)")}&am=${encodeURIComponent(currentAmount)}&cu=INR&tn=Institutional%20Execution`;
 
   const copyCode = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -96,11 +91,11 @@ module.exports = { initiateUpiCollect };`;
   const getQrCodeSnippet = () => `// QR Code payload specification for ${detectedHandler.name}
 {
   "payeeVpa": "${currentUpiId}",
-  "payeeName": "Danish Ahmed",
+  "payeeName": "DANISH AHMED K M (DM)",
   "amount": ${currentAmount},
   "currency": "INR",
   "transactionNote": "Execution Platform Deposit",
-  "appSchema": "upi://pay?pa=${currentUpiId}&am=${currentAmount}&cu=INR"
+  "appSchema": "upi://pay?pa=${currentUpiId}&pn=DANISH%20AHMED%20K%20M%20(DM)&am=${currentAmount}&cu=INR"
 }`;
 
   return (
@@ -129,13 +124,13 @@ module.exports = { initiateUpiCollect };`;
         </div>
 
         {/* UPI Apps selector pills */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
           {handlers.map(app => {
             const isSelected = upiId.toLowerCase().includes(app.handleSuffixes[0]) || (app.id === "gpay" && upiId.includes("@ok"));
             return (
               <button
                 key={app.id}
-                onClick={() => setUpiId(`danish${app.handleSuffixes[0]}`)}
+                onClick={() => setUpiId(`danishahmed0123200-3${app.handleSuffixes[0]}`)}
                 className={`p-2.5 rounded-xl border text-left transition-all ${
                   isSelected ? `${app.badgeBg} ${app.color} ${app.textColor} font-bold` : "bg-zinc-900/40 border-zinc-800 text-zinc-400 hover:border-zinc-700"
                 }`}
@@ -143,42 +138,6 @@ module.exports = { initiateUpiCollect };`;
                 <div className="text-xs">{app.name}</div>
                 <div className="text-[9px] font-mono text-zinc-500 mt-0.5">{app.handleSuffixes[0]}</div>
               </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Fallback Routing Chain */}
-      <div className="bg-zinc-950 border border-zinc-800 p-4 rounded-2xl space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
-            <Activity className="h-3.5 w-3.5 text-emerald-400" /> NPCI Fallback Routing Chain
-          </span>
-          <button
-            onClick={runFallbackTest}
-            disabled={testingFallback}
-            className="text-[10px] font-bold text-emerald-400 hover:text-emerald-300 underline flex items-center gap-1"
-          >
-            <RefreshCw className={`h-3 w-3 ${testingFallback ? "animate-spin" : ""}`} />
-            <span>{testingFallback ? "Simulating Failover..." : "Test Fallback"}</span>
-          </button>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
-          {["GPay (@okaxis)", "PhonePe (@ybl)", "Paytm (@paytm)", "BHIM (@upi)"].map((stepName, idx) => {
-            const isActive = testingFallback && fallbackStep === idx + 1;
-            const isPassed = testingFallback && fallbackStep > idx + 1;
-            return (
-              <React.Fragment key={stepName}>
-                {idx > 0 && <ArrowRight className="h-3 w-3 text-zinc-600" />}
-                <div className={`px-3 py-1.5 rounded-xl border transition-all ${
-                  isActive ? "bg-amber-500/20 border-amber-500 text-amber-300 animate-pulse" :
-                  isPassed ? "bg-emerald-500/20 border-emerald-500 text-emerald-300" :
-                  "bg-zinc-900 border-zinc-800 text-zinc-400"
-                }`}>
-                  {stepName} {isActive ? "(Active)" : isPassed ? "(Routed)" : ""}
-                </div>
-              </React.Fragment>
             );
           })}
         </div>

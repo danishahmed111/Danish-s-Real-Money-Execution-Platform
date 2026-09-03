@@ -319,15 +319,15 @@ app.post("/v1/verify/upi", async (req, res) => {
   return res.json({
     success: true,
     vpa,
-    name: "Danish Ahmed Km",
+    name: "DANISH AHMED K M (DM)",
     appDetected: appName,
     verified: true,
     latency_ms: Math.floor(600 + Math.random() * 200),
     npci_ref: npciRef,
-    intentUrl: `upi://pay?pa=${encodeURIComponent(vpa)}&pn=Danish%20Ahmed&am=${encodeURIComponent(amount)}&cu=INR&tn=Execution%20Platform`,
+    intentUrl: `upi://pay?pa=${encodeURIComponent(vpa)}&pn=DANISH%20AHMED%20K%20M%20(DM)&am=${encodeURIComponent(amount)}&cu=INR&tn=Execution%20Platform`,
     qrPayload: {
       payeeVpa: vpa,
-      payeeName: "Danish Ahmed Km",
+      payeeName: "DANISH AHMED K M (DM)",
       amount,
       currency: "INR"
     }
@@ -355,7 +355,7 @@ app.post("/v1/verify/account", async (req, res) => {
     success: true,
     account_number: `••••${account_number.slice(-4)}`,
     ifsc,
-    beneficiary_name: name || "Danish Ahmed Km",
+    beneficiary_name: name || "DANISH AHMED K M (DM)",
     account_status: "ACTIVE",
     penny_drop_status: "SUCCESS",
     utr,
@@ -371,7 +371,7 @@ app.post("/v1/npci/penny-drop", async (req, res) => {
     success: true,
     status: "VERIFIED",
     penny_drop_utr: `IMPS/${Date.now()}/${Math.floor(Math.random()*89999+10000)}`,
-    name_at_bank: "Danish Ahmed Km",
+    name_at_bank: "DANISH AHMED K M (DM)",
     matchScore: 0.98
   });
 });
@@ -397,12 +397,7 @@ app.get("/v1/handlers/status", (req, res) => {
     success: true,
     timestamp: new Date().toISOString(),
     handlers: [
-      { id: "gpay", name: "Google Pay", handle: "@okicici", latency: "0.62s", successRate: "99.7%", status: "HEALTHY" },
-      { id: "phonepe", name: "PhonePe", handle: "@ybl", latency: "0.78s", successRate: "99.4%", status: "HEALTHY" },
-      { id: "paytm", name: "Paytm", handle: "@paytm", latency: "0.85s", successRate: "98.9%", status: "HEALTHY" },
-      { id: "amazon", name: "Amazon Pay", handle: "@apl", latency: "1.12s", successRate: "98.2%", status: "DEGRADED" },
-      { id: "bhim", name: "BHIM UPI", handle: "@upi", latency: "0.95s", successRate: "99.1%", status: "HEALTHY" },
-      { id: "whatsapp", name: "WhatsApp Pay", handle: "@wa", latency: "1.24s", successRate: "97.5%", status: "HEALTHY" }
+      { id: "gpay", name: "Google Pay", handle: "@okicici", latency: "0.62s", successRate: "99.7%", status: "HEALTHY" }
     ],
     bankRails: [
       { id: "razorpayx", name: "RazorpayX", latency: "0.71s", successRate: "99.8%", status: "HEALTHY" },

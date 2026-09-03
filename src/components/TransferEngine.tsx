@@ -31,7 +31,7 @@ export default function TransferEngine() {
   const [paymentMethod, setPaymentMethod] = useState<"none" | "netbanking" | "upi" | "card" | "imps" | "neft" | "rtgs">("upi");
   const [selectedBank, setSelectedBank] = useState("");
   const [selectedUpiApp, setSelectedUpiApp] = useState<"gpay" | "paytm" | "phonepe" | "bhim">("gpay");
-  const [upiId, setUpiId] = useState("danish@okaxis");
+  const [upiId, setUpiId] = useState("danishahmed0123200-3@okicici");
   const [showUpiQrModal, setShowUpiQrModal] = useState(false);
   const [upiVerified, setUpiVerified] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -96,7 +96,7 @@ export default function TransferEngine() {
 
       if (paymentMethod === "upi") {
         if (!upiId || !upiId.includes("@")) {
-          return setError("Please enter a valid UPI ID (e.g. danish@okaxis, danish@paytm, danish@ybl)");
+          return setError("Please enter a valid UPI ID (e.g. danishahmed0123200-3@okicici)");
         }
       }
       if (paymentMethod === "netbanking" && !selectedBank) {
@@ -474,32 +474,9 @@ export default function TransferEngine() {
                           {paymentMethod === "upi" && (
                             <div className="space-y-4 mt-3 p-4 bg-zinc-950 border border-zinc-800 rounded-2xl">
                               <div className="flex items-center justify-between">
-                                <span className="text-xs font-mono text-zinc-400 uppercase tracking-wider">Select UPI App</span>
+                                <span className="text-xs font-mono text-zinc-400 uppercase tracking-wider">UPI Routing</span>
                                 <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded font-mono">Instant Collect</span>
                               </div>
-                              <div className="grid grid-cols-4 gap-2">
-                                {[
-                                  { id: "gpay" as const, name: "Google Pay", handle: "@okaxis" },
-                                  { id: "paytm" as const, name: "Paytm", handle: "@paytm" },
-                                  { id: "phonepe" as const, name: "PhonePe", handle: "@ybl" },
-                                  { id: "bhim" as const, name: "BHIM UPI", handle: "@upi" },
-                                ].map(app => (
-                                  <button
-                                    key={app.id}
-                                    onClick={() => {
-                                      setSelectedUpiApp(app.id);
-                                      setUpiId(`danish${app.handle}`);
-                                    }}
-                                    className={`p-3 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 ${
-                                      selectedUpiApp === app.id ? "bg-zinc-900 border-emerald-500 text-zinc-100 ring-1 ring-emerald-500/30" : "bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:border-zinc-700"
-                                    }`}
-                                  >
-                                    <span className="font-bold text-xs">{app.name}</span>
-                                    <span className="text-[9px] font-mono text-zinc-500">{app.handle}</span>
-                                  </button>
-                                ))}
-                              </div>
-
                               <div className="space-y-2">
                                 <div className="flex justify-between items-center text-xs">
                                   <span className="text-zinc-400">UPI ID / VPA</span>
@@ -517,7 +494,7 @@ export default function TransferEngine() {
                                       setUpiId(e.target.value);
                                       setUpiVerified(e.target.value.includes("@"));
                                     }}
-                                    placeholder="e.g. danish@okaxis"
+                                    placeholder="e.g. danishahmed0123200-3@okicici"
                                     className="flex-1 bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-2.5 text-xs text-zinc-200 font-mono focus:outline-none focus:border-emerald-500"
                                   />
                                   <button
@@ -883,14 +860,14 @@ export default function TransferEngine() {
          <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
            <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl">
              <div className="flex justify-between items-center border-b border-zinc-800 pb-3">
-               <span className="text-xs font-black text-zinc-100 uppercase italic tracking-wider">Scan & Pay via UPI App</span>
+               <span className="text-xs font-black text-zinc-100 uppercase italic tracking-wider">Scan & Pay via Google Pay</span>
                <button onClick={() => setShowUpiQrModal(false)} className="text-zinc-500 hover:text-zinc-300 text-xs font-bold">✕</button>
              </div>
-             <p className="text-xs text-zinc-400">Open Google Pay, Paytm, or PhonePe to scan and approve collect request.</p>
+             <p className="text-xs text-zinc-400">Open Google Pay to scan and approve the collect request.</p>
              <div className="bg-white p-4 rounded-2xl inline-block shadow-inner mx-auto">
                <img 
-                 src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`upi://pay?pa=${upiId}&pn=Danish%20Trading%20Desk&am=${amount || "100"}&cu=INR`)}`} 
-                 alt="UPI QR Code" 
+                 src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`upi://pay?pa=danishahmed0123200-3@okicici&pn=DANISH%20AHMED%20K%20M%20(DM)&am=${amount || "100"}&cu=INR`)}`} 
+                 alt="GooglePay QR Code" 
                  className="w-40 h-40 object-contain mx-auto"
                />
              </div>
