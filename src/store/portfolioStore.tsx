@@ -19,7 +19,7 @@ import { generateBase32Secret, generateBackupCodes } from "../lib/totp";
 // Live prices Sep 2026: ETH $2380.69, SOL $99.59, BTC $77016.89
 // Fixed $0 USD bug: finalUsdVal never 0 again
 
-const REAL_KOTAK_DATA = {
+export const REAL_KOTAK_DATA = {
   holderName: "DANISH AHMED K M",
   upiId: "9880535421@kotakbank",
   phone: "9880535421",
@@ -28,12 +28,32 @@ const REAL_KOTAK_DATA = {
   exampleWiped: true
 };
 
-const LIVE_PRICES_SEP_2026_REAL = {
+export const LIVE_PRICES_SEP_2026_REAL = {
   ETH: 2380.69,
   SOL: 99.59,
   BTC: 77016.89,
   fallback: { ETH: 3450.80, SOL: 184.65, BTC: 94850.25 }
 };
+
+export function generateHashForCoin(asset: string): string {
+  const upper = (asset || '').toUpperCase();
+  if (upper === 'BTC') {
+    // BTC: 64 hex no 0x - Bitcoin TXID format
+    return Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join("");
+  }
+  if (upper === 'SOL') {
+    // SOL: Base58 87 chars - Solana signature format (simplified Base58)
+    const base58Chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+    return Array.from({length: 87}, () => base58Chars[Math.floor(Math.random()*base58Chars.length)]).join("");
+  }
+  if (['XRP','ADA','DOGE'].includes(upper)) {
+    // XRP/ADA/DOGE: 64 hex (XRP uppercase)
+    const hash = Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join("");
+    return upper === 'XRP' ? hash.toUpperCase() : hash;
+  }
+  // ETH, DAI, USDT, USDC, LINK, BNB, MATIC, POL, etc: 0x + 64 hex - Ethereum family
+  return "0x" + Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join("");
+}
 // ===== END UPGRADED HEADER =====
 
 
@@ -569,7 +589,7 @@ export function PortfolioStoreProvider({ children }: { children: React.ReactNode
       return false;
     }
 
-    const generateHash = () => "0x" + Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join("");
+    const generateHash = () => generateHashForCoin(fromAsset || toAsset || 'ETH');
 
     // ===== UPGRADED FIX: Ensure usdVal never 0 - use live Sep 2026 prices =====
     // Real live prices: ETH $2380.69, SOL $99.59, BTC $77016.89 (Finnhub Sep 3 2026)
@@ -770,11 +790,8 @@ export function PortfolioStoreProvider({ children }: { children: React.ReactNode
     updatedWallets[wIdx] = wallet;
     setWallets(updatedWallets);
 
-    const generateHash = () => "0x" + Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join("");
-
-    // Create transaction record
     const newTx: TransactionRecord = {
-      transactionId: generateHash(),
+      transactionId: generateHashForCoin(assetSymbol || 'ETH'),
       type: "TRANSFER",
       fromAsset: assetSymbol,
       toAsset: recipientAddress.slice(0, 8) + "...",
@@ -850,11 +867,9 @@ export function PortfolioStoreProvider({ children }: { children: React.ReactNode
     const updated = nfts.filter(n => n.nftId !== nftId);
     setNfts(updated);
     
-    const generateHash = () => "0x" + Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join("");
-    
     // Add a record of this transfer to transactions
     const newTx: TransactionRecord = {
-      transactionId: generateHash(),
+      transactionId: generateHashForCoin('ETH'),
       type: "TRANSFER",
       fromAsset: "NFT",
       toAsset: recipientAddress.slice(0, 8) + "...",
